@@ -186,11 +186,6 @@ func CreateContainer(cc *ContainerConfig, i int) string {
 		createArgs = append(createArgs, "-e", env)
 	}
 	for _, port := range cc.Info.Ports {
-		/*
-		if strings.Contains(port, ":") == false {
-			port = "0:" + port
-		}
-		*/
 		createArgs = append(createArgs, "-p", port)
 	}
 
