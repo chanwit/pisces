@@ -4,7 +4,7 @@ Pisces
 Pisces is a Fig clone that understands Docker Swarm.
 
 Problem
-=======
+-------
 
 The Docker Swarm project was started several months after Fig.
 Their design rationale do not match.
@@ -14,7 +14,8 @@ a user cannot build, scale or link containers on their cluster.
 Making Fig to be fully compatible with Swarm takes time.
 
 Composition Redefined
-=====================
+---------------------
+
 `Pisces` is carefully designed and test against Swarm since the beginning.
 It consumes the same `yml` format of Fig.
 `Pisces` shares the same integration tests, taken from Swarm.
@@ -27,12 +28,15 @@ It's a clustering counter-part of Fig from the beginning.
 Developers who are familiar with Fig can just use `Pisces` along side Fig.
 
 Requirements
-============
+------------
+
 `Pisces` requires a proper cluster setup done using `docker-machine`.
 It also requires the `docker` client executable.
 Connection must be done via TLS.
 
 FAQ
-===
+---
+
   * Why don't you contribute to Fig or Docker Compose rather than implement a new tool?
+
   I'd love to. But I just do not write Python. That's all.
