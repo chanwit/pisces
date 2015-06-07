@@ -1,7 +1,7 @@
 Pisces
 ======
 
-Pisces is a Fig clone that understands Docker Swarm.
+`Pisces` is a Fig clone that understands Docker Swarm.
 
 Problem
 -------
@@ -10,8 +10,8 @@ The Docker Swarm project was started several months after Fig.
 Their design rationale do not match.
 Fig is built for a stand-alone Docker, while Swarm is a clustering system.
 This causes incompatibilty between them at the level that
-a user cannot build, scale or link containers on their cluster.
-Making Fig to be fully compatible with Swarm takes time.
+users cannot build, scale or link containers on their cluster.
+Making Fig to be fully compatible with Swarm takes time, but our system needs it today.
 
 Composition Redefined
 ---------------------
