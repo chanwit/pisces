@@ -1,0 +1,18 @@
+front:
+  build: ./front
+  softlinks:
+   - web # inter-link
+  ports:
+   - "80:80"
+
+web:
+  build: ./web
+  links:
+   - db
+  ports:
+   - "80"
+
+db:
+  image: mysql
+  environment:
+    - "MYSQL_ROOT_PASSWORD=1234"
