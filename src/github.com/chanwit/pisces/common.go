@@ -172,6 +172,18 @@ func CountContainers(namespace string) int {
 	return len(strings.Split(string(output), "\n")) - 1
 }
 
+func findContainerByNamespace(namespace string) (string, error) {
+	output, _ := exec.Command(
+		"docker", "ps",
+		"-a", "-q", "-n", "1",
+		"--filter", "label="+namespace).Output()
+	containerId := strings.TrimSpace(string(output))
+	if containerId == "" {
+		return "", fmt.Errorf("No container found")
+	}
+	return containerId, nil
+}
+
 func CreateContainer(cc *ContainerConfig, i int) string {
 	projectKey := fmt.Sprintf("%s_%s", cc.Project, cc.Service)
 	// if image: is specify, just use it
@@ -187,6 +199,27 @@ func CreateContainer(cc *ContainerConfig, i int) string {
 	}
 	for _, port := range cc.Info.Ports {
 		createArgs = append(createArgs, "-p", port)
+	}
+
+	// if there's a link
+	// just use container ID
+	//
+	// Swarm's dependency filter will do the job
+	for _, link := range cc.Info.Links {
+		if strings.Contains(link,":") == false {
+			service := link // e.g. db
+			// web_1 will link to db_1 for example
+			namespaceToLink := fmt.Sprintf("pisces.%s_%s.id=%d", cc.Project, service, i)
+			id, err := findContainerByNamespace(namespaceToLink)
+			if err != nil {
+				// nothing to link, so relax a bit
+				// web_1 will link to db_?
+				namespaceToLink = fmt.Sprintf("pisces.%s_%s.id", cc.Project, service)
+				id, err = findContainerByNamespace(namespaceToLink)
+			}
+			link = id + ":" + link
+		}
+		createArgs = append(createArgs, "--link", link)
 	}
 
 	createArgs = append(createArgs, "-l", "pisces.container=true")
@@ -228,6 +261,8 @@ func RemoveContainer(namespace string, id int) error {
 		"--filter", "label="+fmt.Sprintf("%s=%d", namespace, id)).Output()
 
 	containerId := strings.TrimSpace(string(output))
-
-	return exec.Command("docker", "rm", "-f", containerId).Run()
+	cmd := exec.Command("docker", "rm", "-f", containerId)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }

@@ -1,7 +1,8 @@
 front:
   build: ./front
-  softlinks:
-   - web # inter-link
+  environment: ["affinity:pisces.kapook_web.id!=/\\d+/"]
+  links:
+   - web 
   ports:
    - "80:80"
 
