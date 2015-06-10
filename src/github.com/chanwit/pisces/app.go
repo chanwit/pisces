@@ -1,10 +1,10 @@
 package pisces
 
 import (
-    "os"
-	"path"
 	"fmt"
 	"github.com/codegangsta/cli"
+	"os"
+	"path"
 )
 
 func NewApp(subcmd string) *cli.App {
