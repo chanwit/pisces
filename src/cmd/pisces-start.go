@@ -10,13 +10,7 @@ import (
 )
 
 func main() {
-	app := pisces.NewApp("up")
-	app.Flags = []cli.Flag{
-		cli.BoolFlag{
-			Name:  "d",
-			Usage: "run in background",
-		},
-	}
+	app := pisces.NewApp("start")
 	app.Action = func(c *cli.Context) {
 		if c.Bool("help") {
 			cli.ShowAppHelp(c)
@@ -54,7 +48,7 @@ func action(c *cli.Context) {
 	filteredService, order := pisces.FilterService(conf, services)
 	for _, service := range order {
 
-		info, exist := filteredService[service]
+		_, exist := filteredService[service]
 		if exist == false {
 			continue
 		}
@@ -62,16 +56,7 @@ func action(c *cli.Context) {
 		projectKey := fmt.Sprintf("%s_%s", project, service)
 		namespace := fmt.Sprintf("pisces.%s.id", projectKey)
 
-		containerConfig := &pisces.ContainerConfig{
-			project,
-			service,
-			namespace,
-			info,
-		}
-
-		nextId := pisces.CountContainers(namespace) + 1
-		id := pisces.CreateContainer(containerConfig, nextId)
-		pisces.StartContainer(id, c.Bool("d"))
+		pisces.StartContainers(namespace)
 
 	}
 

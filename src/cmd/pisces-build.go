@@ -46,7 +46,13 @@ func action(c *cli.Context) {
 	// build front web db
 	units := c.Args()
 
-	for key, info := range pisces.FilterService(conf, units) {
+	filteredService, order := pisces.FilterService(conf, units)
+	for _, key := range order {
+
+		info, exist := filteredService[key]
+		if exist == false {
+			continue
+		}
 
 		// skip if build: is not specified
 		if info.Build == "" {

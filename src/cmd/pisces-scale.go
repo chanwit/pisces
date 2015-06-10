@@ -57,7 +57,13 @@ func action(c *cli.Context) {
 		serviceMap[service] = num
 	}
 
-	for service, info := range pisces.FilterService(conf, services) {
+	filteredService, order := pisces.FilterService(conf, services)
+	for _, service := range order {
+
+		info, exist := filteredService[service]
+		if exist == false {
+			continue
+		}
 
 		projectKey := fmt.Sprintf("%s_%s", project, service)
 		namespace := fmt.Sprintf("pisces.%s.id", projectKey)

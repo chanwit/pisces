@@ -106,8 +106,19 @@ func CheckDockerHostVar() bool {
 	return true
 }
 
-func FilterService(config Config, services []string) Config {
-	var filteredConf Config
+func FilterService(config Config, services []string) (filteredConf Config, order []string) {
+	g := make(graph)
+	for k, info := range config {
+		value := []string{}
+		for _, link := range info.Links {
+			parts := strings.SplitN(link, ":", 2)
+			value = append(value, parts[len(parts)-1])
+		}
+		g[k] = value
+	}
+
+	order, _ = topSortDFS(g)
+
 	if len(services) > 0 {
 		// filter only matched includes
 		filteredConf = make(Config)
@@ -118,7 +129,7 @@ func FilterService(config Config, services []string) Config {
 		filteredConf = config
 	}
 
-	return filteredConf
+	return filteredConf, order
 }
 
 func MachineConfig(node string) []string {
@@ -265,4 +276,93 @@ func RemoveContainer(namespace string, id int) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
+}
+
+func StartContainers(namespace string) error {
+	output, _ := exec.Command(
+		"docker", "ps",
+		"-a", "-q",
+		"--filter=status=exited",
+		"--filter=label="+namespace).Output()
+
+	str := strings.TrimSpace(string(output))
+	if str == "" {
+		return nil
+	}
+	containerIds := strings.Split(str, "\n")
+	args := []string{"start"}
+	args = append(args, containerIds...)
+	cmd := exec.Command("docker", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
+func StopContainers(namespace string) error {
+	output, _ := exec.Command(
+		"docker", "ps",
+		"-a", "-q",
+		"--filter=status=running",
+		"--filter=label="+namespace).Output()
+
+	str := strings.TrimSpace(string(output))
+	if str == "" {
+		return nil
+	}
+	containerIds := strings.Split(str, "\n")
+	args := []string{"stop"}
+	args = append(args, containerIds...)
+	cmd := exec.Command("docker", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
+type graph map[string][]string
+
+func topSortDFS(g graph) (order, cyclic []string) {
+    L := make([]string, len(g))
+    i := 0 // len(L)
+    temp := map[string]bool{}
+    perm := map[string]bool{}
+    var cycleFound bool
+    var cycleStart string
+    var visit func(string)
+    visit = func(n string) {
+        switch {
+        case temp[n]:
+            cycleFound = true
+            cycleStart = n
+            return
+        case perm[n]:
+            return
+        }
+        temp[n] = true
+        for _, m := range g[n] {
+            visit(m)
+            if cycleFound {
+                if cycleStart > "" {
+                    cyclic = append(cyclic, n)
+                    if n == cycleStart {
+                        cycleStart = ""
+                    }
+                }
+                return
+            }
+        }
+        delete(temp, n)
+        perm[n] = true
+        L[i] = n
+        i++
+    }
+    for n := range g {
+        if perm[n] {
+            continue
+        }
+        visit(n)
+        if cycleFound {
+            return nil, cyclic
+        }
+    }
+    return L, nil
 }
