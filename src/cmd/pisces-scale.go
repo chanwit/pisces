@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"strings"
 	"strconv"
+	"strings"
 
 	"github.com/chanwit/pisces"
 	"github.com/codegangsta/cli"
@@ -74,9 +74,9 @@ func action(c *cli.Context) {
 		num := serviceMap[service]
 		// count = nextId - 1 (1-1 = 0)
 		// delta = num - count
-		if(num == count) {
+		if num == count {
 			// do nothing
-		} else if(num > count) {
+		} else if num > count {
 			// scale up
 			conIds := []string{}
 			for i := nextId; i <= num; i++ {
@@ -86,7 +86,7 @@ func action(c *cli.Context) {
 			for _, id := range conIds {
 				pisces.StartContainer(id, true)
 			}
-		} else if(count > num) {
+		} else if count > num {
 			// scale down
 			for i := count; i > num; i-- {
 				pisces.RemoveContainer(namespace, i)

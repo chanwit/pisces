@@ -53,19 +53,19 @@ func action(c *cli.Context) {
 
 	for service, info := range pisces.FilterService(conf, services) {
 
-                projectKey := fmt.Sprintf("%s_%s", project, service)
-                namespace := fmt.Sprintf("pisces.%s.id", projectKey)
+		projectKey := fmt.Sprintf("%s_%s", project, service)
+		namespace := fmt.Sprintf("pisces.%s.id", projectKey)
 
-                containerConfig := &pisces.ContainerConfig{
-                        project,
-                        service,
-                        namespace,
-                        info,
-                }
+		containerConfig := &pisces.ContainerConfig{
+			project,
+			service,
+			namespace,
+			info,
+		}
 
-                nextId := pisces.CountContainers(namespace)
-                id := pisces.CreateContainer(containerConfig, nextId)
-                pisces.StartContainer(id, c.Bool("d"))
+		nextId := pisces.CountContainers(namespace)
+		id := pisces.CreateContainer(containerConfig, nextId)
+		pisces.StartContainer(id, c.Bool("d"))
 
 	}
 

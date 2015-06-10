@@ -1,14 +1,14 @@
 package pisces
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
-	"crypto/tls"
-	"crypto/x509"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -22,8 +22,8 @@ type Info struct {
 }
 
 type ContainerConfig struct {
-	Project string
-	Service string
+	Project   string
+	Service   string
 	Namespace string
 	Info
 }
@@ -206,7 +206,7 @@ func CreateContainer(cc *ContainerConfig, i int) string {
 	//
 	// Swarm's dependency filter will do the job
 	for _, link := range cc.Info.Links {
-		if strings.Contains(link,":") == false {
+		if strings.Contains(link, ":") == false {
 			service := link // e.g. db
 			// web_1 will link to db_1 for example
 			namespaceToLink := fmt.Sprintf("pisces.%s_%s.id=%d", cc.Project, service, i)
