@@ -49,7 +49,7 @@ func action(c *cli.Context) {
 	filteredService, order := pisces.FilterService(conf, units)
 	for _, key := range order {
 
-		info, exist := filteredService[key]
+		info, exist := filteredService.Services[key]
 		if exist == false {
 			continue
 		}

@@ -45,7 +45,7 @@ func action(c *cli.Context) {
 
 	// check if unit is defined in the conf
 	for _, s := range services {
-		if _, exist := conf[s]; !exist {
+		if _, exist := conf.Services[s]; !exist {
 			fmt.Printf("'%s' is not defined in docker-compose.yml.\n", s)
 			os.Exit(1)
 		}
@@ -54,7 +54,7 @@ func action(c *cli.Context) {
 	filteredService, order := pisces.FilterService(conf, services)
 	for _, service := range order {
 
-		info, exist := filteredService[service]
+		info, exist := filteredService.Services[service]
 		if exist == false {
 			continue
 		}
@@ -66,6 +66,7 @@ func action(c *cli.Context) {
 			project,
 			service,
 			namespace,
+			conf.PodSpec,
 			info,
 		}
 

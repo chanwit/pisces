@@ -1,8 +1,9 @@
+# pod: {front: 1, web: 2, db: 4}
+
 front:
   build: ./front
-  environment: ["affinity:pisces.kapook_web.id!=/\\d+/"]
   links:
-   - web 
+   - web
   ports:
    - "80:80"
 

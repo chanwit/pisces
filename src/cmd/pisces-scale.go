@@ -47,7 +47,7 @@ func action(c *cli.Context) {
 			os.Exit(1)
 		}
 		service := parts[0]
-		if _, exist := conf[service]; !exist {
+		if _, exist := conf.Services[service]; !exist {
 			fmt.Printf("Service '%s' not defined in docker-compose.yml", service)
 			os.Exit(1)
 		}
@@ -60,7 +60,7 @@ func action(c *cli.Context) {
 	filteredService, order := pisces.FilterService(conf, services)
 	for _, service := range order {
 
-		info, exist := filteredService[service]
+		info, exist := filteredService.Services[service]
 		if exist == false {
 			continue
 		}
@@ -72,6 +72,7 @@ func action(c *cli.Context) {
 			project,
 			service,
 			namespace,
+			conf.PodSpec,
 			info,
 		}
 

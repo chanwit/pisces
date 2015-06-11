@@ -25,21 +25,40 @@ type ContainerConfig struct {
 	Project   string
 	Service   string
 	Namespace string
+	PodSpec   map[string]int
 	Info
 }
 
-type Config map[string]Info
+type Config struct {
+	PodSpec  map[string]int
+	Services map[string]Info
+}
 
 func ReadConfig() (Config, error) {
 	// FIXME traverse back to parent until finding .yml
 	data, err := ioutil.ReadFile("./docker-compose.yml")
 	if err != nil {
 		fmt.Printf("%s\n", err)
-		return nil, err
+		return Config{}, err
 	}
-	config := make(Config)
-	err = yaml.Unmarshal(data, &config)
-	return config, err
+
+	services := make(map[string]Info)
+	err = yaml.Unmarshal(data, &services)
+
+	// check if first line defines pod
+	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
+	if strings.HasPrefix(lines[0], "# pod:") {
+		podYaml := strings.TrimLeft(lines[0], "#")
+		podSpec := make(map[string]map[string]int)
+		err = yaml.Unmarshal([]byte(podYaml), &podSpec)
+		if err != nil {
+			return Config{}, err
+		}
+
+		return Config{podSpec["pod"], services}, nil
+	}
+
+	return Config{nil, services}, err
 }
 
 func Nodes() []string {
@@ -108,7 +127,7 @@ func CheckDockerHostVar() bool {
 
 func FilterService(config Config, services []string) (filteredConf Config, order []string) {
 	g := make(graph)
-	for k, info := range config {
+	for k, info := range config.Services {
 		value := []string{}
 		for _, link := range info.Links {
 			parts := strings.SplitN(link, ":", 2)
@@ -121,9 +140,9 @@ func FilterService(config Config, services []string) (filteredConf Config, order
 
 	if len(services) > 0 {
 		// filter only matched includes
-		filteredConf = make(Config)
+		filteredConf = Config{config.PodSpec, make(map[string]Info)}
 		for _, s := range services {
-			filteredConf[s] = config[s]
+			filteredConf.Services[s] = config.Services[s]
 		}
 	} else {
 		filteredConf = config

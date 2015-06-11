@@ -40,7 +40,7 @@ func action(c *cli.Context) {
 
 	// check if unit is defined in the conf
 	for _, s := range services {
-		if _, exist := conf[s]; !exist {
+		if _, exist := conf.Services[s]; !exist {
 			fmt.Printf("'%s' is not defined in docker-compose.yml.\n", s)
 			os.Exit(1)
 		}
@@ -51,7 +51,7 @@ func action(c *cli.Context) {
 	sort.Sort(sort.Reverse(sort.StringSlice(order)))
 	for _, service := range order {
 
-		_, exist := filteredService[service]
+		_, exist := filteredService.Services[service]
 		if exist == false {
 			continue
 		}
