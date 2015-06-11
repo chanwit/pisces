@@ -10,3 +10,4 @@ go install src/cmd/pisces-up.go
 go install src/cmd/pisces-scale.go
 go install src/cmd/pisces-stop.go
 go install src/cmd/pisces-start.go
+go install src/cmd/pisces-kill.go

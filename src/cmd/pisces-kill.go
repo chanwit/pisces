@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"sort"
 
 	"github.com/chanwit/pisces"
 	"github.com/codegangsta/cli"
 )
 
 func main() {
-	app := pisces.NewApp("start")
+	app := pisces.NewApp("kill")
 	app.Action = func(c *cli.Context) {
 		if c.Bool("help") {
 			cli.ShowAppHelp(c)
@@ -42,6 +43,9 @@ func action(c *cli.Context) {
 	}
 
 	filteredService, order := pisces.FilterService(conf, services)
+	// kill in reverse topology (front -> back)
+	sort.Sort(sort.Reverse(sort.StringSlice(order)))
+
 	for _, service := range order {
 
 		_, exist := filteredService.Services[service]
@@ -52,7 +56,7 @@ func action(c *cli.Context) {
 		projectKey := fmt.Sprintf("%s_%s", project, service)
 		namespace := fmt.Sprintf("pisces.%s.id", projectKey)
 
-		pisces.StartContainers(namespace)
+		pisces.RemoveContainers(namespace)
 
 	}
 

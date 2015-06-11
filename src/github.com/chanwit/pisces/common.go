@@ -202,6 +202,16 @@ func CountContainers(namespace string) int {
 	return len(strings.Split(string(output), "\n")) - 1
 }
 
+func CountRunningContainers(namespace string) int {
+	output, _ := exec.Command(
+		"docker", "ps",
+		"-a", "-q",
+		"--filter=status=running",
+		"--filter=label="+namespace).Output()
+
+	return len(strings.Split(string(output), "\n")) - 1
+}
+
 func findContainerByNamespace(namespace string) (string, error) {
 	output, _ := exec.Command(
 		"docker", "ps",
@@ -257,10 +267,20 @@ func CreateContainer(cc *ContainerConfig, i int) string {
 	createArgs = append(createArgs, "-t", imageName)
 
 	cmd := exec.Command("docker", createArgs...)
-	cmd.Stderr = os.Stderr
 	output, err := cmd.Output()
 	if err != nil {
-		fmt.Println(err)
+		// retry 2nd
+		cmd = exec.Command("docker", createArgs...)
+		output, err = cmd.Output()
+		if err != nil {
+			// retry 3rd
+			cmd = exec.Command("docker", createArgs...)
+			cmd.Stderr = os.Stderr
+			output, err = cmd.Output()
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
 	}
 
 	containerId := strings.TrimSpace(string(output))
@@ -292,6 +312,25 @@ func RemoveContainer(namespace string, id int) error {
 
 	containerId := strings.TrimSpace(string(output))
 	cmd := exec.Command("docker", "rm", "-f", containerId)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
+func RemoveContainers(namespace string) error {
+	output, _ := exec.Command(
+		"docker", "ps",
+		"-a", "-q",
+		"--filter=label="+namespace).Output()
+
+	str := strings.TrimSpace(string(output))
+	if str == "" {
+		return nil
+	}
+	containerIds := strings.Split(str, "\n")
+	args := []string{"rm", "-f"}
+	args = append(args, containerIds...)
+	cmd := exec.Command("docker", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
@@ -384,4 +423,15 @@ func topSortDFS(g graph) (order, cyclic []string) {
 		}
 	}
 	return L, nil
+}
+
+func CheckServices(conf Config, services []string) error {
+	// check if unit is defined in the conf
+	for _, s := range services {
+		if _, exist := conf.Services[s]; !exist {
+			return fmt.Errorf("'%s' is not defined in docker-compose.yml.\n", s)
+		}
+	}
+
+	return nil
 }

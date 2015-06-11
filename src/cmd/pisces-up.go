@@ -43,12 +43,8 @@ func action(c *cli.Context) {
 	// up -d front web db
 	services := c.Args()
 
-	// check if unit is defined in the conf
-	for _, s := range services {
-		if _, exist := conf.Services[s]; !exist {
-			fmt.Printf("'%s' is not defined in docker-compose.yml.\n", s)
-			os.Exit(1)
-		}
+	if err := pisces.CheckServices(conf, services); err != nil {
+		os.Exit(1)
 	}
 
 	filteredService, order := pisces.FilterService(conf, services)

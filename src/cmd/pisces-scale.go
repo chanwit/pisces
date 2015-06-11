@@ -6,6 +6,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/chanwit/pisces"
 	"github.com/codegangsta/cli"
@@ -92,6 +93,20 @@ func action(c *cli.Context) {
 			}
 			for _, id := range conIds {
 				pisces.StartContainer(id, true)
+			}
+			max := 10
+			i := 0
+			// wait until all containers in this tier started
+			for {
+				if pisces.CountRunningContainers(namespace) == num {
+					break
+				}
+				time.Sleep(500 * time.Millisecond)
+				i++
+				if i > max {
+					fmt.Println("Retry exceed")
+					os.Exit(1)
+				}
 			}
 		} else if count > num {
 			// scale down
