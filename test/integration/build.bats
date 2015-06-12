@@ -16,3 +16,15 @@ function teardown() {
 
 	[[ "${lines[0]}" == "build web" ]]
 }
+
+@test "pisces build no DOCKER_HOST" {
+	start_docker_with_busybox 1
+	swarm_manage
+
+	run "${PISCES_BINARY}" build web
+
+	# no DOCKER_HOST defined, error should be 1
+	[[ ${status} -eq 1 ]]
+	# should have some error message
+	[[ ${output} == *"Environment variable \"DOCKER_HOST\" is required."* ]]
+}

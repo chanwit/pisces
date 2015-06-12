@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/codegangsta/cli"
+	"github.com/chanwit/pisces/util"
 )
 
 var cmdBuild = cli.Command{
@@ -18,5 +20,9 @@ var cmdBuild = cli.Command{
 }
 
 func build(c *cli.Context) {
+	if util.CheckDockerHostVar() == false {
+		os.Exit(1)
+	}
+
 	fmt.Println("build " + c.Args()[0])
 }
