@@ -15,6 +15,7 @@ func main() {
 	app.Usage = fmt.Sprintf("A Fig-clone that understands Docker Swarm")
 
 	app.Commands = []cli.Command{
+		cmdBuild,
 		cmdUp,
 	}
 
