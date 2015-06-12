@@ -1,16 +1,16 @@
 package main
 
-import(
+import (
 	"fmt"
 
 	"github.com/codegangsta/cli"
 )
 
 var cmdUp = cli.Command{
-	Name: "up",
+	Name:   "up",
 	Action: up,
 	Flags: []cli.Flag{
-		cli.BoolFlag {
+		cli.BoolFlag{
 			Name:  "d",
 			Usage: "run in background",
 		},
