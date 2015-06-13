@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/chanwit/pisces/conf"
+	"github.com/chanwit/pisces/swarm"
 	"github.com/chanwit/pisces/util"
 	"github.com/codegangsta/cli"
 )
@@ -25,21 +26,34 @@ func build(c *cli.Context) {
 		os.Exit(1)
 	}
 
+	dir, _ := os.Getwd()
 	project := util.ProjectName(c)
 
 	config, err := conf.ReadConfig()
 	if err != nil {
 		fmt.Printf("Config error: %s", err)
-		return
+		os.Exit(2)
 	}
 
 	// filter and reorder according to DAG
 	services := config.FilterServices(c.Args())
 	for _, service := range services {
-
-		imageId := swarm.Build(service, c.Bool("no-cache"))
-
+		for name, addr := range swarm.Nodes() {
+			spec := swarm.BuildSpec{
+				Info: config.Services[service],
+				NodeName: name,
+				NodeAddr: addr,
+				ProjectDir: dir,
+				Project: project,
+				Service: service,
+				NoCache: c.Bool("no-cache"),
+			}
+			imageId := swarm.Build(spec)
+			if imageId == "" {
+				os.Exit(5)
+			}
+			fmt.Println(imageId)
+		}
 	}
 
-	fmt.Println("build " + project + "_" + c.Args()[0])
 }

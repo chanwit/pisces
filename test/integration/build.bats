@@ -3,6 +3,7 @@
 load helpers
 
 function teardown() {
+	docker_swarm rmi -f testdata_web
 	swarm_manage_cleanup
 	stop_docker
 }
@@ -23,8 +24,23 @@ function teardown() {
 	cd $TESTDATA
 	run pisces build web
 	[[ ${status} -eq 0 ]]
+	local BUILD_IMAGE=${lines[0]}
 
-	echo $output
+	run docker_swarm images -q testdata_web
+	[[ ${status} -eq 0 ]]
+	[[ $BUILD_IMAGE == ${lines[0]} ]]
+}
 
-	[[ "${lines[0]}" == "build testdata_web" ]]
+@test "pisces build --no-cache" {
+	start_docker 1
+	swarm_manage
+
+	cd $TESTDATA
+	run pisces build --no-cache web
+	[[ ${status} -eq 0 ]]
+	local BUILD_IMAGE=${lines[0]}
+
+	run docker_swarm images -q testdata_web
+	[[ ${status} -eq 0 ]]
+	[[ $BUILD_IMAGE == ${lines[0]} ]]
 }

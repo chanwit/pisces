@@ -21,18 +21,28 @@ type Config struct {
 	Services map[string]Info
 }
 
-func ReadConfig() (Config, error) {
+func (c *Config) FilterServices(services []string) []string {
+
+	if len(services) == 0 {
+		return []string{"web"} // all services
+	}
+
+	return []string{"web"}
+
+}
+
+func ReadConfig() (*Config, error) {
 	// FIXME traverse back to parent until finding .yml
 	data, err := ioutil.ReadFile("docker-compose.yml")
 	if err != nil {
 		fmt.Printf("%s\n", err)
-		return Config{}, err
+		return nil, err
 	}
 
 	return parseConfig(data)
 }
 
-func parseConfig(content []byte) (Config, error) {
+func parseConfig(content []byte) (*Config, error) {
 	services := make(map[string]Info)
 	err := yaml.Unmarshal(content, &services)
 
@@ -43,11 +53,11 @@ func parseConfig(content []byte) (Config, error) {
 		podSpec := make(map[string]map[string]int)
 		err = yaml.Unmarshal([]byte(podYaml), &podSpec)
 		if err != nil {
-			return Config{}, err
+			return nil, err
 		}
 
-		return Config{podSpec["pod"], services}, nil
+		return &Config{podSpec["pod"], services}, nil
 	}
 
-	return Config{nil, services}, err
+	return &Config{nil, services}, err
 }

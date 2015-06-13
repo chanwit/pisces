@@ -2,9 +2,13 @@ package swarm
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"path"
 	"strconv"
 	"strings"
+
+	"github.com/chanwit/pisces/conf"
 )
 
 // map[name]address
@@ -39,6 +43,48 @@ func Nodes() map[string]string {
 	return result
 }
 
-func Build(onNode string, service string, noCache bool) string {
+type BuildSpec struct {
+	Info	 conf.Info
+	NodeName string
+	NodeAddr string
+	ProjectDir string
+	Project  string
+	Service  string
+	NoCache  bool
+}
+
+func Build(spec BuildSpec) string {
+	home := os.Getenv("HOME")
+	imageName := spec.Project + "_" + spec.Service
+	args := []string{"build"}
+	if spec.NoCache {
+		args = append(args, "--no-cache")
+	}
+	args = append(args, "-t", imageName, ".")
+	cmd := exec.Command("docker", args...)
+	cmd.Env = append(cmd.Env, "DOCKER_HOST=" + spec.NodeAddr)
+	cmd.Dir = path.Join(spec.ProjectDir, spec.Info.Build)
+	// cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if strings.HasSuffix(spec.NodeAddr, ":2376") ||
+	   strings.HasSuffix(spec.NodeAddr, ":3376") {
+	   	// assume that it's listed in Docker-Machine
+		certPath := path.Join(home, ".docker/machine/machines", spec.NodeName)
+		cmd.Env = append(cmd.Env, "DOCKER_TLS_VERIFY=1")
+		cmd.Env = append(cmd.Env, "DOCKER_CERT_PATH=" + certPath)
+	}
+
+	output, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	lastLine := lines[len(lines)-1]
+	if strings.Contains(lastLine, "Successfully built ") {
+		result := strings.SplitN(lastLine, "Successfully built ", 2)[1]
+		return result
+	}
 	return ""
+
 }
