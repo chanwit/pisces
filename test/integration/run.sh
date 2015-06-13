@@ -1,10 +1,25 @@
+#!/bin/bash
 
-# recompile
-(cd $GOPATH/src/github.com/chanwit/pisces && go install . )
+INTEGRATION_ROOT=$(dirname "$(readlink -f "$BASH_SOURCE")")
 
-GO_RESULT=$?
+# unit tests
+echo "Unit testing ..."
 
-if [[ GO_RESULT -eq 0 ]]; then
-  # run tests
-  sudo PISCES_BINARY=$GOBIN/pisces bats .
+sudo bats "${INTEGRATION_ROOT}/go"
+
+if [[ $? -eq 0 ]]; then
+
+	# recompile
+	echo "Compiling ..."
+	(cd $GOPATH/src/github.com/chanwit/pisces && go install . )
+
+	GO_RESULT=$?
+
+	if [[ GO_RESULT -eq 0 ]]; then
+	  #
+	  echo "Integration testing ..."
+	  # run tests
+	  sudo PISCES_BINARY=$GOBIN/pisces bats $INTEGRATION_ROOT
+	fi
+
 fi
