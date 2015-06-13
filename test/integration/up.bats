@@ -14,6 +14,5 @@ function teardown() {
 	run pisces up -d web
 	[[ ${status} -eq 0 ]]
 
-
 	[[ "${lines[0]}" == "up -d web" ]]
 }

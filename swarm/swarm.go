@@ -44,13 +44,13 @@ func Nodes() map[string]string {
 }
 
 type BuildSpec struct {
-	Info	 conf.Info
-	NodeName string
-	NodeAddr string
+	Info       conf.Info
+	NodeName   string
+	NodeAddr   string
 	ProjectDir string
-	Project  string
-	Service  string
-	NoCache  bool
+	Project    string
+	Service    string
+	NoCache    bool
 }
 
 func Build(spec BuildSpec) string {
@@ -62,16 +62,16 @@ func Build(spec BuildSpec) string {
 	}
 	args = append(args, "-t", imageName, ".")
 	cmd := exec.Command("docker", args...)
-	cmd.Env = append(cmd.Env, "DOCKER_HOST=" + spec.NodeAddr)
+	cmd.Env = append(cmd.Env, "DOCKER_HOST="+spec.NodeAddr)
 	cmd.Dir = path.Join(spec.ProjectDir, spec.Info.Build)
 	// cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if strings.HasSuffix(spec.NodeAddr, ":2376") ||
-	   strings.HasSuffix(spec.NodeAddr, ":3376") {
-	   	// assume that it's listed in Docker-Machine
+		strings.HasSuffix(spec.NodeAddr, ":3376") {
+		// assume that it's listed in Docker-Machine
 		certPath := path.Join(home, ".docker/machine/machines", spec.NodeName)
 		cmd.Env = append(cmd.Env, "DOCKER_TLS_VERIFY=1")
-		cmd.Env = append(cmd.Env, "DOCKER_CERT_PATH=" + certPath)
+		cmd.Env = append(cmd.Env, "DOCKER_CERT_PATH="+certPath)
 	}
 
 	output, err := cmd.Output()

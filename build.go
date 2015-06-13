@@ -40,13 +40,13 @@ func build(c *cli.Context) {
 	for _, service := range services {
 		for name, addr := range swarm.Nodes() {
 			spec := swarm.BuildSpec{
-				Info: config.Services[service],
-				NodeName: name,
-				NodeAddr: addr,
+				Info:       config.Services[service],
+				NodeName:   name,
+				NodeAddr:   addr,
 				ProjectDir: dir,
-				Project: project,
-				Service: service,
-				NoCache: c.Bool("no-cache"),
+				Project:    project,
+				Service:    service,
+				NoCache:    c.Bool("no-cache"),
 			}
 			imageId := swarm.Build(spec)
 			if imageId == "" {
