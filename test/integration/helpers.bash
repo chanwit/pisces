@@ -8,7 +8,7 @@ TESTDATA="${INTEGRATION_ROOT}/testdata"
 
 # Root directory of the repository.
 PISCES_ROOT=${PISCES_ROOT:-$(cd "$INTEGRATION_ROOT/../.."; pwd -P)}
-PISCES_BINARY=${PISCES_BINARY:-"${PISCES_ROOT}/bin/pisces"}
+PISCES_BINARY=${PISCES_BINARY:-${PISCES_ROOT}/bin/pisces}
 
 SWARM_VERSION=${SWARM_VERSION:-0.3.0-rc2}
 

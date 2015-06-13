@@ -1,8 +1,11 @@
 package util
 
 import (
-	"os"
 	"fmt"
+	"os"
+	"path"
+
+	"github.com/codegangsta/cli"
 )
 
 func CheckDockerHostVar() bool {
@@ -16,4 +19,14 @@ func CheckDockerHostVar() bool {
 	}
 
 	return true
+}
+
+func ProjectName(c *cli.Context) string {
+	project := c.String("project")
+	if project == "" {
+		dir, _ := os.Getwd()
+		project = path.Base(dir)
+	}
+
+	return project
 }
