@@ -7,7 +7,8 @@ import (
 	"strings"
 )
 
-func Nodes() []string {
+// map[name]address
+func Nodes() map[string]string {
 	output, err := exec.Command("docker", "info").Output()
 	if err != nil {
 		fmt.Printf("%s\n", err)
@@ -26,11 +27,18 @@ func Nodes() []string {
 		}
 	}
 
-	result := []string{}
+	result := make(map[string]string)
 	for i := 0; i < num; i++ {
 		line := lines[found+1+(i*5)]
-		name := strings.TrimSpace(strings.SplitN(line, ":", 2)[0])
-		result = append(result, name)
+		parts := strings.SplitN(line, ":", 2)
+		name := strings.TrimSpace(parts[0])
+		addr := strings.TrimSpace(parts[1])
+		result[name] = addr
 	}
+
 	return result
+}
+
+func Build(onNode string, service string, noCache bool) string {
+	return ""
 }

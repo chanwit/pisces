@@ -11,5 +11,5 @@ func TestNodes(t *testing.T) {
 	nodes := Nodes()
 
 	assert.Equal(t, 1, len(nodes))
-	assert.Equal(t, []string{"node-0"}, nodes)
+	assert.NotEmpty(t, nodes["node-0"])
 }

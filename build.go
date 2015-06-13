@@ -27,10 +27,18 @@ func build(c *cli.Context) {
 
 	project := util.ProjectName(c)
 
-	_, err := conf.ReadConfig()
+	config, err := conf.ReadConfig()
 	if err != nil {
 		fmt.Printf("Config error: %s", err)
 		return
+	}
+
+	// filter and reorder according to DAG
+	services := config.FilterServices(c.Args())
+	for _, service := range services {
+
+		imageId := swarm.Build(service, c.Bool("no-cache"))
+
 	}
 
 	fmt.Println("build " + project + "_" + c.Args()[0])
