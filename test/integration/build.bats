@@ -44,3 +44,19 @@ function teardown() {
 	[[ ${status} -eq 0 ]]
 	[[ $BUILD_IMAGE == ${lines[0]} ]]
 }
+
+@test "pisces build: many nodes" {
+	start_docker 2
+	swarm_manage
+
+	# pre-condition, image count must be 0
+	IMAGE_COUNT=$(docker_swarm images | grep testdata_web | wc -l)
+	[[ ${IMAGE_COUNT} -eq 0 ]]
+
+	cd $TESTDATA
+	run pisces build web
+	[[ ${status} -eq 0 ]]
+
+	IMAGE_COUNT=$(docker_swarm images | grep testdata_web | wc -l)
+	[[ ${IMAGE_COUNT} -eq 2 ]]
+}
