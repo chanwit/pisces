@@ -22,13 +22,13 @@ function teardown() {
 	swarm_manage
 
 	cd $TESTDATA
-	run pisces build web
+	EXPECTED=$(pisces build web)
 	[[ ${status} -eq 0 ]]
-	local BUILD_IMAGE=${lines[0]}
 
-	run docker_swarm images -q testdata_web
-	[[ ${status} -eq 0 ]]
-	[[ $BUILD_IMAGE == ${lines[0]} ]]
+	restart_swarm_manage
+
+	ACTUAL=$(docker_swarm images -a | grep testdata_web | awk '{print $3}')
+	[[ $EXPECTED == $ACTUAL ]]
 }
 
 @test "pisces build --no-cache" {
@@ -36,13 +36,12 @@ function teardown() {
 	swarm_manage
 
 	cd $TESTDATA
-	run pisces build --no-cache web
-	[[ ${status} -eq 0 ]]
-	local BUILD_IMAGE=${lines[0]}
+	EXPECTED=$(pisces build --no-cache web)
 
-	run docker_swarm images -q testdata_web
-	[[ ${status} -eq 0 ]]
-	[[ $BUILD_IMAGE == ${lines[0]} ]]
+	restart_swarm_manage
+
+	ACTUAL=$(docker_swarm images -a | grep testdata_web | awk '{print $3}')
+	[[ $EXPECTED == $ACTUAL ]]
 }
 
 @test "pisces build: many nodes" {
@@ -50,13 +49,39 @@ function teardown() {
 	swarm_manage
 
 	# pre-condition, image count must be 0
-	IMAGE_COUNT=$(docker_swarm images | grep testdata_web | wc -l)
+	IMAGE_COUNT=$(docker_swarm images -a | grep testdata_web | wc -l)
 	[[ ${IMAGE_COUNT} -eq 0 ]]
 
 	cd $TESTDATA
-	run pisces build web
-	[[ ${status} -eq 0 ]]
+	EXPECTED=$(pisces build --no-cache web | sort)
 
-	IMAGE_COUNT=$(docker_swarm images | grep testdata_web | wc -l)
-	[[ ${IMAGE_COUNT} -eq 2 ]]
+	restart_swarm_manage
+
+	ACTUAL=$(docker_swarm images -a | grep testdata_web | awk '{print $3}' | sort)
+	[[ $EXPECTED == $ACTUAL ]]
+}
+
+@test "pisces build: many services" {
+	start_docker 2
+	swarm_manage
+
+	# pre-condition, image count must be 0
+	IMAGE_COUNT=$(docker_swarm images -a | grep testdata_ | wc -l)
+	[[ ${IMAGE_COUNT} -eq 0 ]]
+
+	cd $TESTDATA
+	EXPECTED=$(pisces build web front | sort)
+	echo ">> EXPECTED"
+	echo "$EXPECTED"
+
+	restart_swarm_manage
+
+	ACTUAL=$(docker_swarm images -a | grep testdata_ | awk '{print $3}' | sort)
+	ACTUAL_COUNT=$(echo "$ACTUAL" | wc -l)
+	echo ">> ACTUAL"
+	echo "$ACTUAL"
+	echo ">> ACTUAL_COUNT: $ACTUAL_COUNT"
+
+	[[ $ACTUAL_COUNT -eq 4 ]]
+	[[ $EXPECTED == $ACTUAL ]]
 }

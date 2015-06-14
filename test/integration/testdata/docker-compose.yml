@@ -1,2 +1,12 @@
+front:
+  build: ./front
+  links:
+  - web
+
 web:
   build: ./web
+  links:
+  - db
+
+db:
+  image: busybox
