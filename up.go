@@ -1,8 +1,7 @@
 package main
 
 import (
-	"fmt"
-
+	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 )
 
@@ -19,6 +18,6 @@ var cmdUp = cli.Command{
 
 func up(c *cli.Context) {
 	if c.Bool("d") {
-		fmt.Println("up -d " + c.Args()[0])
+		log.Infof("up -d %s", c.Args()[0])
 	}
 }
