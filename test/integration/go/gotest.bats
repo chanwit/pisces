@@ -1,6 +1,8 @@
 #!/usr/bin/env bats
 
 load ../helpers
+
+# TODO make this configurable
 export GOPATH=/home/chanwit/projects/pisces
 export GOROOT=/opt/go
 
