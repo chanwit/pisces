@@ -36,11 +36,12 @@ func build(c *cli.Context) {
 	}
 
 	// filter and reorder according to DAG
-	services := config.FilterServices(c.Args())
-	for _, service := range services {
+	// build does not require the service order
+	filteredConfig, _ := config.FilterServices(c.Args())
+	for service, info := range filteredConfig.Services {
 		for name, addr := range swarm.Nodes() {
 			spec := swarm.BuildSpec{
-				Info:       config.Services[service],
+				Info:       info,
 				NodeName:   name,
 				NodeAddr:   addr,
 				ProjectDir: dir,

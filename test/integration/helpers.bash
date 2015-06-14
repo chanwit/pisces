@@ -105,6 +105,11 @@ function swarm_manage() {
 	wait_until_reachable "$SWARM_HOST"
 }
 
+function restart_swarm_manage() {
+	swarm_manage_cleanup
+	swarm_manage "$@"
+}
+
 # swarm join every engine created with `start_docker`.
 #
 # It will wait until all nodes are visible in discovery (`swarm list`) before
